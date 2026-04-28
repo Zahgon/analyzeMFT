@@ -8,9 +8,11 @@ from .validators import validate_config_schema, ConfigValidationError
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
+
 
 @dataclass
 class AnalysisProfile:
@@ -33,134 +35,46 @@ class AnalysisProfile:
     include_system_files: bool = True
     custom_fields: Optional[list] = None
 
+
 class ConfigManager:
-    
     def __init__(self):
-        self.logger = logging.getLogger('analyzeMFT.config')
+        self.logger = logging.getLogger("analyzeMFT.config")
         self.config_dir = self._get_config_dir()
         self.profiles: Dict[str, AnalysisProfile] = {}
         self._load_default_profiles()
-    
+
     def _get_config_dir(self) -> Path:
         pass
-    
+
     def _load_default_profiles(self) -> None:
         pass
-    
+
     def load_config_file(self, config_path: Union[str, Path]) -> Dict[str, Any]:
-        config_path = Path(config_path)
-        
-        if not config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {config_path}")
-        
-        try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                if config_path.suffix.lower() in ['.yml', '.yaml']:
-                    if not HAS_YAML:
-                        raise ImportError("PyYAML is required for YAML configuration files. Install with: pip install PyYAML")
-                    config = yaml.safe_load(f)
-                elif config_path.suffix.lower() == '.json':
-                    config = json.load(f)
-                else:
-                    content = f.read()
-                    f.seek(0)
-                    if content.strip().startswith('{'):
-                        config = json.load(f)
-                    elif HAS_YAML:
-                        config = yaml.safe_load(f)
-                    else:
-                        raise ValueError("Unable to determine configuration file format. Use .json or .yaml extension.")
-            
-            self.logger.info(f"Loaded configuration from {config_path}")
-            return config
-            
-        except (json.JSONDecodeError, yaml.YAMLError) as e:
-            self.logger.error(f"Error parsing configuration file {config_path}: {e}")
-            raise
-        except Exception as e:
-            self.logger.error(f"Error loading configuration file {config_path}: {e}")
-            raise
-    
-    def load_profile_from_config(self, config: Dict[str, Any], profile_name: str = "custom") -> AnalysisProfile:
-        try:
-            validated_config = validate_config_schema(config)
-            self.logger.info(f"Configuration validation successful for profile '{profile_name}'")
-        except ConfigValidationError as e:
-            self.logger.error(f"Configuration validation failed for profile '{profile_name}': {e}")
-            raise
-        
-        profile_data = asdict(self.profiles['default'])
-        profile_data.update(validated_config)
-        profile_data['name'] = profile_name
-        
-        return AnalysisProfile(**profile_data)
-    
-    def save_profile(self, profile: AnalysisProfile, config_path: Union[str, Path]) -> None:
         pass
-    
+
+    def load_profile_from_config(
+        self, config: Dict[str, Any], profile_name: str = "custom"
+    ) -> AnalysisProfile:
+        pass
+
+    def save_profile(
+        self, profile: AnalysisProfile, config_path: Union[str, Path]
+    ) -> None:
+        pass
+
     def get_profile(self, name: str) -> Optional[AnalysisProfile]:
-        return self.profiles.get(name)
-    
+        pass
+
     def list_profiles(self) -> Dict[str, str]:
-        return {name: profile.description for name, profile in self.profiles.items()}
-    
+        pass
+
     def create_sample_config(self, config_path: Union[str, Path]) -> None:
-        config_path = Path(config_path)
-        
-        sample_config = {
-            "name": "default",
-            "description": "Default configuration file",
-            "export_format": "csv",
-            "compute_hashes": False,
-            "verbosity": 1,
-            "debug": 0,
-            "chunk_size": 1000,
-            "enable_anomaly_detection": False,
-            "file_size_threshold_mb": 100,
-            "date_filter_start": None,
-            "date_filter_end": None,
-            "file_types_include": None,
-            "file_types_exclude": ["$MFT", "$MFTMirr"],
-            "min_file_size": None,
-            "max_file_size": None,
-            "include_deleted": True,
-            "include_system_files": True,
-            "custom_fields": None
-        }
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        try:
-            with open(config_path, 'w', encoding='utf-8') as f:
-                if config_path.suffix.lower() in ['.yml', '.yaml']:
-                    if not HAS_YAML:
-                        json.dump(sample_config, f, indent=2)
-                    else:
-                        yaml.dump(sample_config, f, default_flow_style=False, indent=2)
-                else:
-                    json.dump(sample_config, f, indent=2)
-            
-            self.logger.info(f"Created sample configuration file: {config_path}")
-            
-        except Exception as e:
-            self.logger.error(f"Error creating sample configuration file: {e}")
-            raise
+        pass
+
 
 def get_default_config_paths() -> list:
-    config_dir = Path.home() / '.analyzeMFT'
-    cwd_config = Path.cwd()
-    
-    paths = []
-    for ext in ['json', 'yaml', 'yml']:
-        paths.append(config_dir / f'config.{ext}')
-        paths.append(config_dir / f'analyzeMFT.{ext}')
-    for ext in ['json', 'yaml', 'yml']:
-        paths.append(cwd_config / f'analyzeMFT.{ext}')
-        paths.append(cwd_config / f'.analyzeMFT.{ext}')
-    
-    return paths
+    pass
+
 
 def find_config_file() -> Optional[Path]:
-    for path in get_default_config_paths():
-        if path.exists():
-            return path
-    return None
+    pass
