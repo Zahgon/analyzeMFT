@@ -32,8 +32,7 @@ class WindowsTime:
             self.unixtime = 0.0
 
     def get_unix_time(self) -> float:
-        timestamp = (self.high << 32) | self.low
-        return (timestamp / self.TICKS_PER_SECOND) - self.WINDOWS_EPOCH_DIFF
+        pass
     
     def __str__(self) -> str:
         return self.dtstr
@@ -42,4 +41,4 @@ class WindowsTime:
         return f"WindowsTime(low={self.low}, high={self.high}, unixtime={self.unixtime})"
     
     def is_valid(self) -> bool:
-        return self.dt is not None and self.unixtime != 0.0
+        pass

@@ -81,9 +81,7 @@ class MftAnalyzer:
     @property
     def interrupt_flag(self):
         """Lazily create interrupt flag when needed"""
-        if self._interrupt_flag is None:
-            self._interrupt_flag = asyncio.Event()
-        return self._interrupt_flag
+        pass
 
     def setup_logging(self) -> None:
         if self.debug >= 2:
@@ -107,19 +105,7 @@ class MftAnalyzer:
             self.logger.addHandler(file_handler)
     
     def setup_interrupt_handler(self) -> None:
-        def interrupt_handler(signum, frame):
-            self.logger.warning("Interrupt received. Cleaning up...")
-            self.interrupt_flag.set()
-
-        try:
-            if sys.platform == "win32":
-                import win32api
-                win32api.SetConsoleCtrlHandler(lambda x: interrupt_handler(None, None), True)
-            else:
-                signal.signal(signal.SIGINT, interrupt_handler)
-                signal.signal(signal.SIGTERM, interrupt_handler)
-        except Exception as e:
-            self.logger.warning(f"Could not set up interrupt handler: {e}")
+        pass
 
     async def analyze(self) -> None:
         try:
@@ -466,98 +452,16 @@ class MftAnalyzer:
 
     async def create_sqlite_database(self) -> sqlite3.Connection:
 
-        try:
-            conn = sqlite3.connect(self.output_file)
-            cursor = conn.cursor()
-            
-            sql_dir = Path(__file__).parent / 'sql'
-            if sql_dir.exists():
-                for sql_file in sql_dir.glob('*.sql'):
-                    try:
-                        with open(sql_file, 'r') as f:
-                            cursor.executescript(f.read())
-                    except Exception as e:
-                        self.logger.warning(f"Error executing SQL script {sql_file}: {e}")
-            
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS mft_records (
-                    record_number INTEGER PRIMARY KEY,
-                    filename TEXT,
-                    parent_record_number INTEGER,
-                    file_size INTEGER,
-                    is_directory INTEGER,
-                    creation_time TEXT,
-                    modification_time TEXT,
-                    access_time TEXT,
-                    entry_time TEXT,
-                    attribute_types TEXT
-                )
-            ''')
-
-            conn.commit()
-            return conn
-            
-        except Exception as e:
-            self.logger.error(f"Error creating SQLite database: {e}")
-            raise
+        pass
 
     async def write_sqlite(self) -> None:
-        try:
-            conn = await self.create_sqlite_database()
-            cursor = conn.cursor()
-
-            for record in self.mft_records.values():
-                try:
-                    cursor.execute('''
-                        INSERT OR REPLACE INTO mft_records (
-                            record_number, filename, parent_record_number, file_size,
-                            is_directory, creation_time, modification_time, access_time,
-                            entry_time, attribute_types
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', (
-                        record.recordnum,
-                        record.filename,
-                        record.get_parent_record_num(),
-                        record.filesize,
-                        1 if record.flags & FILE_RECORD_IS_DIRECTORY else 0,
-                        record.fn_times['crtime'].dtstr,
-                        record.fn_times['mtime'].dtstr,
-                        record.fn_times['atime'].dtstr,
-                        record.fn_times['ctime'].dtstr,
-                        ','.join(map(str, record.attribute_types))
-                    ))
-                except Exception as e:
-                    self.logger.warning(f"Error inserting record {record.recordnum}: {e}")
-
-            conn.commit()
-            conn.close()
-            
-        except Exception as e:
-            self.logger.error(f"Error writing to SQLite: {e}")
-            raise
+        pass
     
     async def write_csv_block(self) -> None:
-        if self.csv_writer and self.mft_records:
-            try:
-                for record in self.mft_records.values():
-                    csv_data = record.to_csv()
-                    self.csv_writer.writerow(csv_data)
-                
-                self.mft_records.clear()
-                
-            except Exception as e:
-                self.logger.error(f"Error writing CSV block: {e}")
-                raise
+        pass
     
     def handle_interrupt(self) -> None:
-        try:
-            loop = asyncio.get_event_loop()
-            if hasattr(loop, 'add_signal_handler'):
-                loop.add_signal_handler(signal.SIGINT, self._handle_signal)
-                loop.add_signal_handler(signal.SIGTERM, self._handle_signal)
-        except Exception as e:
-            self.logger.warning(f"Could not set up signal handlers: {e}")
+        pass
     
     def _handle_signal(self) -> None:
-        self.interrupt_flag.set()
-        self.logger.warning("Interrupt signal received")
+        pass

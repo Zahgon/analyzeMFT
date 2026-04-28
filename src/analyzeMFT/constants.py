@@ -473,24 +473,20 @@ CSV_HEADER: Final[list] = [
 
 def is_valid_attribute_type(attr_type: int) -> bool:
     """Check if the given attribute type is valid."""
-    return attr_type in ATTRIBUTE_NAMES
+    pass
 
 def get_attribute_name(attr_type: int) -> str:
     """Get the name of an attribute type."""
-    return ATTRIBUTE_NAMES.get(attr_type, f"UNKNOWN_ATTRIBUTE_{attr_type:02X}")
+    pass
 
 def is_directory_record(flags: int) -> bool:
     """Check if the record is a directory."""
-    return bool(flags & FILE_RECORD_IS_DIRECTORY)
+    pass
 
 def is_record_in_use(flags: int) -> bool:
     """Check if the record is in use."""
-    return bool(flags & FILE_RECORD_IN_USE)
+    pass
 
 def get_filename_namespace_name(namespace_id: int) -> str:
     """Get the name of a filename namespace."""
-    try:
-        namespace = FileNameNamespace(namespace_id)
-        return FILENAME_NAMESPACE[namespace]
-    except ValueError:
-        return f"UNKNOWN_NAMESPACE_{namespace_id}"
+    pass

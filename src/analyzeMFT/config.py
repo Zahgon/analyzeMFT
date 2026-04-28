@@ -42,43 +42,10 @@ class ConfigManager:
         self._load_default_profiles()
     
     def _get_config_dir(self) -> Path:
-        home_config = Path.home() / '.analyzeMFT'
-        if home_config.exists() or not home_config.parent.exists():
-            return home_config
-        return Path.cwd() / '.analyzeMFT'
+        pass
     
     def _load_default_profiles(self) -> None:
-        self.profiles['default'] = AnalysisProfile()
-        self.profiles['quick'] = AnalysisProfile(
-            name="quick",
-            description="Quick analysis with minimal output",
-            export_format="csv",
-            compute_hashes=False,
-            verbosity=0,
-            chunk_size=5000,
-            include_deleted=False
-        )
-        self.profiles['forensic'] = AnalysisProfile(
-            name="forensic",
-            description="Comprehensive forensic analysis",
-            export_format="csv",
-            compute_hashes=True,
-            verbosity=1,
-            debug=1,
-            enable_anomaly_detection=True,
-            include_deleted=True,
-            include_system_files=True
-        )
-        self.profiles['performance'] = AnalysisProfile(
-            name="performance",
-            description="Optimized for large MFT files",
-            export_format="sqlite",
-            compute_hashes=False,
-            verbosity=1,
-            chunk_size=10000,
-            include_deleted=False,
-            include_system_files=False
-        )
+        pass
     
     def load_config_file(self, config_path: Union[str, Path]) -> Dict[str, Any]:
         config_path = Path(config_path)
@@ -129,24 +96,7 @@ class ConfigManager:
         return AnalysisProfile(**profile_data)
     
     def save_profile(self, profile: AnalysisProfile, config_path: Union[str, Path]) -> None:
-        config_path = Path(config_path)
-        config_data = asdict(profile)
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        try:
-            with open(config_path, 'w', encoding='utf-8') as f:
-                if config_path.suffix.lower() in ['.yml', '.yaml']:
-                    if not HAS_YAML:
-                        raise ImportError("PyYAML is required for YAML configuration files. Install with: pip install PyYAML")
-                    yaml.dump(config_data, f, default_flow_style=False, indent=2)
-                else:
-                    json.dump(config_data, f, indent=2)
-            
-            self.logger.info(f"Saved profile '{profile.name}' to {config_path}")
-            
-        except Exception as e:
-            self.logger.error(f"Error saving profile to {config_path}: {e}")
-            raise
+        pass
     
     def get_profile(self, name: str) -> Optional[AnalysisProfile]:
         return self.profiles.get(name)

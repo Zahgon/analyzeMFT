@@ -252,26 +252,7 @@ class SQLiteWriter:
             record: MFT record to write
             filepath: Full file path
         """
-        try:
-            record_data = self._prepare_record_data(record, filepath)
-            
-            self.cursor.execute("""
-                INSERT OR REPLACE INTO mft_records (
-                    record_number, sequence_number, flags, used_size, allocated_size,
-                    base_record_number, next_attribute_id, filepath, filename,
-                    parent_record_number, parent_sequence_number,
-                    si_creation_time, si_modification_time, si_access_time, si_entry_time,
-                    fn_creation_time, fn_modification_time, fn_access_time, fn_entry_time,
-                    file_attributes, allocated_file_size, real_file_size,
-                    object_id, birth_volume_id, birth_object_id, birth_domain_id,
-                    md5_hash, sha256_hash, sha512_hash, crc32_hash,
-                    is_active, is_directory, is_deleted, has_ads
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, record_data)
-            
-        except Exception as e:
-            self.logger.error(f"Error writing record {record.recordnum}: {e}")
-            raise
+        pass
             
     def write_records_batch(self, records: List[MftRecord], filepaths: Dict[int, str] = None) -> None:
         """
@@ -332,84 +313,7 @@ class SQLiteWriter:
         Returns:
             Tuple of record data
         """
-        def safe_getattr(obj, attr, default=None):
-            try:
-                return getattr(obj, attr, default)
-            except (AttributeError, TypeError):
-                return default
-
-        parent_record_num = None
-        try:
-            if hasattr(record, 'get_parent_record_num'):
-                parent_record_num = record.get_parent_record_num()
-        except Exception:
-            pass
-            
-        parent_seq_num = safe_getattr(record, 'parent_sequence_number', None)
-        
-        # Extract timestamps
-        si_times = (
-            safe_getattr(record.si_times.get('crtime'), 'dtstr', None) if hasattr(record, 'si_times') else None,
-            safe_getattr(record.si_times.get('mtime'), 'dtstr', None) if hasattr(record, 'si_times') else None,
-            safe_getattr(record.si_times.get('atime'), 'dtstr', None) if hasattr(record, 'si_times') else None,
-            safe_getattr(record.si_times.get('ctime'), 'dtstr', None) if hasattr(record, 'si_times') else None
-        )
-        
-        fn_times = (
-            safe_getattr(record.fn_times.get('crtime'), 'dtstr', None) if hasattr(record, 'fn_times') else None,
-            safe_getattr(record.fn_times.get('mtime'), 'dtstr', None) if hasattr(record, 'fn_times') else None,
-            safe_getattr(record.fn_times.get('atime'), 'dtstr', None) if hasattr(record, 'fn_times') else None,
-            safe_getattr(record.fn_times.get('ctime'), 'dtstr', None) if hasattr(record, 'fn_times') else None
-        )
-        
-        # Extract file info
-        file_info = (
-            safe_getattr(record, 'file_attributes', None),
-            safe_getattr(record, 'allocated_file_size', None),
-            safe_getattr(record, 'filesize', None)
-        )
-        
-        # Extract object info
-        object_info = (
-            safe_getattr(record, 'object_id', None),
-            safe_getattr(record, 'birth_volume_id', None),
-            safe_getattr(record, 'birth_object_id', None),
-            safe_getattr(record, 'birth_domain_id', None)
-        )
-        
-        # Extract hash info
-        hash_info = (
-            safe_getattr(record, 'md5', None),
-            safe_getattr(record, 'sha256', None),
-            safe_getattr(record, 'sha512', None),
-            safe_getattr(record, 'crc32', None)
-        )
-        
-        flags = safe_getattr(record, 'flags', 0)
-        is_active = bool(flags & FILE_RECORD_IN_USE) if flags else False
-        is_directory = bool(flags & FILE_RECORD_IS_DIRECTORY) if flags else False
-        is_deleted = not is_active
-        has_ads = safe_getattr(record, 'has_ads', False)
-        
-        return (
-            safe_getattr(record, 'recordnum', 0),
-            safe_getattr(record, 'seq', None),
-            flags,
-            safe_getattr(record, 'size', None),
-            safe_getattr(record, 'alloc_sizef', None),
-            safe_getattr(record, 'base_ref', None),
-            safe_getattr(record, 'next_attrid', None),
-            filepath,
-            safe_getattr(record, 'filename', None),
-            parent_record_num,
-            parent_seq_num,
-            si_times[0], si_times[1], si_times[2], si_times[3],
-            fn_times[0], fn_times[1], fn_times[2], fn_times[3],
-            file_info[0], file_info[1], file_info[2],
-            object_info[0], object_info[1], object_info[2], object_info[3],
-            hash_info[0], hash_info[1], hash_info[2], hash_info[3],
-            is_active, is_directory, is_deleted, has_ads
-        )
+        pass
         
     def _write_attributes(self, record: MftRecord) -> None:
         """
@@ -423,22 +327,7 @@ class SQLiteWriter:
         
     def create_indexes(self) -> None:
         """Create additional indexes for performance."""
-        indexes = [
-            "CREATE INDEX IF NOT EXISTS idx_record_active ON mft_records(is_active)",
-            "CREATE INDEX IF NOT EXISTS idx_record_directory ON mft_records(is_directory)", 
-            "CREATE INDEX IF NOT EXISTS idx_record_deleted ON mft_records(is_deleted)",
-            "CREATE INDEX IF NOT EXISTS idx_file_extension ON mft_records(filename)",
-            "CREATE INDEX IF NOT EXISTS idx_file_size ON mft_records(real_file_size)",
-        ]
-        
-        for index_sql in indexes:
-            try:
-                self.cursor.execute(index_sql)
-            except Exception as e:
-                self.logger.warning(f"Error creating index: {e}")
-                
-        self.conn.commit()
-        self.logger.info("Additional indexes created")
+        pass
         
     def get_statistics(self) -> Dict[str, Any]:
         """
@@ -447,27 +336,4 @@ class SQLiteWriter:
         Returns:
             Dictionary of statistics
         """
-        stats = {}
-        
-        try:
-            self.cursor.execute("SELECT COUNT(*) FROM mft_records")
-            stats['total_records'] = self.cursor.fetchone()[0]
-            
-            self.cursor.execute("SELECT COUNT(*) FROM mft_records WHERE is_active = 1")
-            stats['active_records'] = self.cursor.fetchone()[0]
-            
-            self.cursor.execute("SELECT COUNT(*) FROM mft_records WHERE is_directory = 1")
-            stats['directories'] = self.cursor.fetchone()[0]
-            
-            self.cursor.execute("SELECT COUNT(*) FROM mft_records WHERE is_deleted = 1")
-            stats['deleted_records'] = self.cursor.fetchone()[0]
-            
-            self.cursor.execute("SELECT AVG(real_file_size), MAX(real_file_size) FROM mft_records WHERE real_file_size > 0")
-            avg_size, max_size = self.cursor.fetchone()
-            stats['avg_file_size'] = avg_size
-            stats['max_file_size'] = max_size
-            
-        except Exception as e:
-            self.logger.error(f"Error getting statistics: {e}")
-            
-        return stats
+        pass
